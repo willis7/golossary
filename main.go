@@ -24,7 +24,7 @@ func main() {
 
 	c := slack.Connect(viper.GetString("slack.token"))
 
-	slack.Dispatcher(c)
+	go slack.Dispatcher(c)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)

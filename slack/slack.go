@@ -46,6 +46,21 @@ type respRtmStart struct {
 	Error    string       `json:"error"`
 }
 
+// Message
+type Message struct {
+	Id      uint64 `json:"id"`
+	Type string    `json:"type"`
+	Error struct {
+		Code int    `json:"code"`
+		Msg  string `json:"msg"`
+	} `json:"error"`
+	ReplyTo int    `json:"reply_to"`
+	Channel string `json:"channel"`
+	Ts      string `json:"ts"`
+	User    string `json:"user"`
+	Text    string `json:"text"`
+}
+
 // start does a rtm.start, and returns a websocket URL and user ID. The
 // websocket URL can be used to initiate an RTM session.
 func start(token string) (wsurl string, id string, err error) {
@@ -80,15 +95,6 @@ func start(token string) (wsurl string, id string, err error) {
 	return
 }
 
-// These are the messages read off and written into the websocket. Since this
-// struct serves as both read and write, we include the "Id" field which is
-// required only for writing.
-type Message struct {
-	Id      uint64 `json:"id"`
-	Type    string `json:"type"`
-	Channel string `json:"channel"`
-	Text    string `json:"text"`
-}
 
 func Connect(token string) *websocket.Conn {
 	wsurl, _, err := start(token)
@@ -105,20 +111,15 @@ func Connect(token string) *websocket.Conn {
 }
 
 func Dispatcher(conn *websocket.Conn) {
-	done := make(chan struct{})
+	defer conn.Close()
 
-	// Receiver
-	go func() {
-		defer conn.Close()
-		defer close(done)
-		for {
-			msg := &Message{}
-			err := conn.ReadJSON(msg)
-			if err != nil {
-				log.Println("read:", err)
-				return
-			}
-			log.Printf("recv: [%s] - %s", msg.Type, msg.Text)
+	for {
+		msg := &Message{}
+		err := conn.ReadJSON(msg)
+		if err != nil {
+			log.Println("read:", err)
+			return
 		}
-	}()
+		log.Printf("recv: %+v", msg)
+	}
 }
