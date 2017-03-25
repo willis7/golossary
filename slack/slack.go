@@ -103,3 +103,22 @@ func Connect(token string) *websocket.Conn {
 
 	return c
 }
+
+func Dispatcher(conn *websocket.Conn) {
+	done := make(chan struct{})
+
+	// Receiver
+	go func() {
+		defer conn.Close()
+		defer close(done)
+		for {
+			msg := &Message{}
+			err := conn.ReadJSON(msg)
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			log.Printf("recv: [%s] - %s", msg.Type, msg.Text)
+		}
+	}()
+}

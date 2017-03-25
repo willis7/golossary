@@ -24,28 +24,12 @@ func main() {
 
 	c := slack.Connect(viper.GetString("slack.token"))
 
-	done := make(chan struct{})
-
-	// Receiver
-	go func() {
-		defer c.Close()
-		defer close(done)
-		for {
-			_, message, err := c.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-				return
-			}
-			log.Printf("recv: %s", message)
-		}
-	}()
+	slack.Dispatcher(c)
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-
+	// app loop
 	for {
 		select {
 		case <-interrupt:
@@ -58,7 +42,6 @@ func main() {
 				return
 			}
 			select {
-			case <-done:
 			case <-time.After(time.Second):
 			}
 			c.Close()
