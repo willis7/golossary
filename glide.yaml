@@ -1,0 +1,5 @@
+package: github.com/willis7/golossary
+import:
+- package: golang.org/x/net
+  subpackages:
+  - websocket
