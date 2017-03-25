@@ -6,19 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"sync/atomic"
 
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
-// These two structures represent the response of the Slack API rtm.start.
-// Only some fields are included. The rest are ignored by json.Unmarshal.
-//type responseRtmStart struct {
-//	Ok    bool         `json:"ok"`
-//	Error string       `json:"error"`
-//	Url   string       `json:"url"`
-//	Self  responseSelf `json:"self"`
-//}
 
 type respRtmStart struct {
 	Ok  bool `json:"ok"`
@@ -55,7 +46,7 @@ type respRtmStart struct {
 
 // slackStart does a rtm.start, and returns a websocket URL and user ID. The
 // websocket URL can be used to initiate an RTM session.
-func slackStart(token string) (wsurl, id string, err error) {
+func start(token string) (wsurl string, id string, err error) {
 	url := fmt.Sprintf("https://slack.com/api/rtm.start?token=%s", token)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -89,7 +80,6 @@ func slackStart(token string) (wsurl, id string, err error) {
 // These are the messages read off and written into the websocket. Since this
 // struct serves as both read and write, we include the "Id" field which is
 // required only for writing.
-
 type Message struct {
 	Id      uint64 `json:"id"`
 	Type    string `json:"type"`
@@ -97,30 +87,16 @@ type Message struct {
 	Text    string `json:"text"`
 }
 
-func GetMessage(ws *websocket.Conn) (m Message, err error) {
-	err = websocket.JSON.Receive(ws, &m)
-	return
-}
-
-var counter uint64
-
-func postMessage(ws *websocket.Conn, m Message) error {
-	m.Id = atomic.AddUint64(&counter, 1)
-	return websocket.JSON.Send(ws, m)
-}
-
-// Starts a websocket-based Real Time API session and return the websocket
-// and the ID of the (bot-)user whom the token belongs to.
-func SlackConnect(token string) (*websocket.Conn, string) {
-	wsurl, id, err := slackStart(token)
+func Connect(token string) *websocket.Conn {
+	wsurl, _, err := start(token)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	ws, err := websocket.Dial(wsurl, "", "https://api.slack.com/")
+	c, _, err := websocket.DefaultDialer.Dial(wsurl, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return ws, id
+	return c
 }

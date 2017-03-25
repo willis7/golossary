@@ -1,27 +1,57 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"strings"
+	"os"
+	"os/signal"
+	"time"
+
+	"github.com/gorilla/websocket"
 	"github.com/willis7/golossary/slack"
 )
 
 func main() {
-	ws, id := slack.SlackConnect("xoxb-158974596516-mPovn5Bbqd6wAiejarChjn0q")
+	c := slack.Connect("xxxxxxxxxxxxxxx")
 
-	fmt.Println("Golossary ready, ^C exits")
+	done := make(chan struct{})
+
+	// Receiver
+	go func() {
+		defer c.Close()
+		defer close(done)
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				log.Println("read:", err)
+				return
+			}
+			log.Printf("recv: %s", message)
+		}
+	}()
+
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
 
 	for {
-		// read each incoming message
-		m, err := slack.GetMessage(ws)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// see if we're mentioned
-		if m.Type == "message" && strings.HasPrefix(m.Text, "<@"+id+">") {
-			fmt.Sprintf("From Golossary: %s", m.Text)
+		select {
+		case <-interrupt:
+			log.Println("interrupt")
+			// To cleanly close a connection, a client should send a close
+			// frame and wait for the server to close the connection.
+			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				log.Println("write close:", err)
+				return
+			}
+			select {
+			case <-done:
+			case <-time.After(time.Second):
+			}
+			c.Close()
+			return
 		}
 	}
 }

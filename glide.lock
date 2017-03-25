@@ -1,6 +1,8 @@
-hash: 70d019c1afb263289dcb561b54af6430ff45a0793c06a4ab38681f0c603a1064
-updated: 2017-03-23T20:06:42.635987613Z
+hash: 007034d0874309e1491ec42729c5302a2e9d220814fba1c5b43590853d4226d6
+updated: 2017-03-25T11:22:24.54060607Z
 imports:
+- name: github.com/gorilla/websocket
+  version: 3ab3a8b8831546bd18fd182c20687ca853b2bb13
 - name: golang.org/x/net
   version: 4971afdc2f162e82d185353533d3cf16188a9f4e
   subpackages:
