@@ -1,17 +1,28 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/spf13/viper"
 	"github.com/willis7/golossary/slack"
 )
 
+func init() {
+	viper.SetConfigName("app_config")
+	viper.AddConfigPath(".")
+	if err := viper.ReadInConfig(); err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
+}
+
 func main() {
-	c := slack.Connect("xxxxxxxxxxxxxxx")
+
+	c := slack.Connect(viper.GetString("slack.token"))
 
 	done := make(chan struct{})
 

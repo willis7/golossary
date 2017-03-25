@@ -44,7 +44,7 @@ test:
 race:
 	go test -race -v $(shell glide novendor)
 
-start:
+run:
 	go run main.go
 
 install:

@@ -8,9 +8,11 @@ import (
 	"net/http"
 
 	"github.com/gorilla/websocket"
+	"github.com/spf13/viper"
 )
 
-
+// respRtmStart is the structure of the introductory response
+// from slack
 type respRtmStart struct {
 	Ok  bool `json:"ok"`
 	URL string `json:"url"`
@@ -44,10 +46,11 @@ type respRtmStart struct {
 	Error    string       `json:"error"`
 }
 
-// slackStart does a rtm.start, and returns a websocket URL and user ID. The
+// start does a rtm.start, and returns a websocket URL and user ID. The
 // websocket URL can be used to initiate an RTM session.
 func start(token string) (wsurl string, id string, err error) {
-	url := fmt.Sprintf("https://slack.com/api/rtm.start?token=%s", token)
+	api_url := viper.GetString("slack.api_url")
+	url := fmt.Sprintf("%s/rtm.start?token=%s", api_url, token)
 	resp, err := http.Get(url)
 	if err != nil {
 		return
