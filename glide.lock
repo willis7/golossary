@@ -1,10 +1,50 @@
-hash: 007034d0874309e1491ec42729c5302a2e9d220814fba1c5b43590853d4226d6
-updated: 2017-03-25T11:22:24.54060607Z
+hash: 3243f4f0c3e0b3bed4df3f2a67c8e2e147600bfe3dfca70a8cf8f7900233f4cd
+updated: 2017-03-25T20:03:15.795699377Z
 imports:
+- name: github.com/fsnotify/fsnotify
+  version: 629574ca2a5df945712d3079857300b5e4da0236
 - name: github.com/gorilla/websocket
   version: 3ab3a8b8831546bd18fd182c20687ca853b2bb13
-- name: golang.org/x/net
-  version: 4971afdc2f162e82d185353533d3cf16188a9f4e
+- name: github.com/hashicorp/hcl
+  version: 630949a3c5fa3c613328e1b8256052cbc2327c9b
   subpackages:
-  - websocket
+  - hcl/ast
+  - hcl/parser
+  - hcl/scanner
+  - hcl/strconv
+  - hcl/token
+  - json/parser
+  - json/scanner
+  - json/token
+- name: github.com/magiconair/properties
+  version: f917359f079a3759162704eaa8caeec3d01d9f91
+- name: github.com/mitchellh/mapstructure
+  version: 53818660ed4955e899c0bcafa97299a388bd7c8e
+- name: github.com/pelletier/go-buffruneio
+  version: c37440a7cf42ac63b919c752ca73a85067e05992
+- name: github.com/pelletier/go-toml
+  version: f6e7596e8daafd44dc9e5c208dc73035020c8481
+- name: github.com/spf13/afero
+  version: 9be650865eab0c12963d8753212f4f9c66cdcf12
+  subpackages:
+  - mem
+- name: github.com/spf13/cast
+  version: ce135a4ebeee6cfe9a26c93ee0d37825f26113c7
+- name: github.com/spf13/jwalterweatherman
+  version: fa7ca7e836cf3a8bb4ebf799f472c12d7e903d66
+- name: github.com/spf13/pflag
+  version: d90f37a48761fe767528f31db1955e4f795d652f
+- name: github.com/spf13/viper
+  version: 5ed0fc31f7f453625df314d8e66b9791e8d13003
+- name: golang.org/x/sys
+  version: afadfcc7779c1f4db0f6f6438afcb108d9c9c7cd
+  subpackages:
+  - unix
+- name: golang.org/x/text
+  version: fc7fa097411d30e6708badff276c4c164425590c
+  subpackages:
+  - transform
+  - unicode/norm
+- name: gopkg.in/yaml.v2
+  version: a3f3340b5840cee44f372bddb5880fcbc419b46a
 testImports: []
