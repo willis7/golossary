@@ -7,7 +7,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/spf13/viper"
 	"github.com/willis7/golossary/slack"
 )
@@ -22,21 +21,20 @@ func init() {
 
 func main() {
 
-	c := slack.Connect(viper.GetString("slack.token"))
+	token := viper.GetString("slack.token")
 
-	go slack.Dispatcher(c)
+	client := slack.NewClient(token)
+	client.Connect()
+	defer client.Close()
+	go client.Dispatch()
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
-
-	// app loop
 	for {
 		select {
 		case <-interrupt:
 			log.Println("interrupt")
-			// To cleanly close a connection, a client should send a close
-			// frame and wait for the server to close the connection.
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			err := client.Shutdown()
 			if err != nil {
 				log.Println("write close:", err)
 				return
@@ -44,7 +42,7 @@ func main() {
 			select {
 			case <-time.After(time.Second):
 			}
-			c.Close()
+			client.Close()
 			return
 		}
 	}

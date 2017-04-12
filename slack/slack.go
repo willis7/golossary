@@ -6,13 +6,16 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync/atomic"
 
 	"github.com/gorilla/websocket"
-	"github.com/spf13/viper"
+	"github.com/pkg/errors"
 )
 
+const RTMMessage = "message"
+
 // respRtmStart is the structure of the introductory response
-// from slack
+// from Slack
 type respRtmStart struct {
 	Ok  bool `json:"ok"`
 	URL string `json:"url"`
@@ -46,9 +49,9 @@ type respRtmStart struct {
 	Error    string       `json:"error"`
 }
 
-// Message
+// Message is the conversation data structure
 type Message struct {
-	Id      uint64 `json:"id"`
+	Id   uint64 `json:"id"`
 	Type string    `json:"type"`
 	Error struct {
 		Code int    `json:"code"`
@@ -61,11 +64,24 @@ type Message struct {
 	Text    string `json:"text"`
 }
 
-// start does a rtm.start, and returns a websocket URL and user ID. The
-// websocket URL can be used to initiate an RTM session.
-func start(token string) (wsurl string, id string, err error) {
-	api_url := viper.GetString("slack.api_url")
-	url := fmt.Sprintf("%s/rtm.start?token=%s", api_url, token)
+type Client struct {
+	conn    *websocket.Conn
+	apiUrl  string
+	token   string
+	counter uint64
+}
+
+// NewClient
+func NewClient(token string) *Client {
+	return &Client{
+		apiUrl: "https://slack.com/api",
+		token:  token,
+	}
+}
+
+// start does a rtm.start, and returns a websocket URL and user ID.
+func (c *Client) start() (wsurl string, id string, err error) {
+	url := fmt.Sprintf("%s/rtm.start?token=%s", c.apiUrl, c.token)
 	resp, err := http.Get(url)
 	if err != nil {
 		return
@@ -95,31 +111,74 @@ func start(token string) (wsurl string, id string, err error) {
 	return
 }
 
-
-func Connect(token string) *websocket.Conn {
-	wsurl, _, err := start(token)
+// Connect opens a websocket connection with Slack.
+func (c *Client) Connect() error {
+	wsurl, _, err := c.start()
 	if err != nil {
 		log.Fatal(err)
+		return errors.Errorf("Client Connect error: %s", err.Error)
 	}
 
-	c, _, err := websocket.DefaultDialer.Dial(wsurl, nil)
+	c.conn, _, err = websocket.DefaultDialer.Dial(wsurl, nil)
 	if err != nil {
 		log.Fatal(err)
+		return errors.Errorf("Client Websocket Connect error: %s", err.Error)
 	}
 
-	return c
+	return nil
 }
 
-func Dispatcher(conn *websocket.Conn) {
-	defer conn.Close()
+// Dispatch reads the events from Slack and sends them to the correct Performer
+func (c *Client) Dispatch() {
+	defer c.conn.Close()
 
 	for {
-		msg := &Message{}
-		err := conn.ReadJSON(msg)
+		msg, err := c.getMessage()
 		if err != nil {
 			log.Println("read:", err)
 			return
 		}
-		log.Printf("recv: %+v", msg)
+		switch msg.Type {
+		case RTMMessage:
+			log.Printf("text: %s", msg.Text)
+			if msg.Text == "hello" {
+				c.postMessage(&Message{Type: msg.Type, Channel: msg.Channel, Text: fmt.Sprintf("Hello to you, %s", msg.User)})
+			}
+			break
+		default:
+			log.Printf("recv: %+v", msg)
+		}
 	}
+}
+
+// Shutdown cleanly closes a connection. A client should send a close
+// frame and wait for the server to close the connection.
+func (c *Client) Shutdown() error {
+	err := c.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	if err != nil {
+		return errors.Errorf("Client Shutdown error: %s", err.Error)
+	}
+	return nil
+}
+
+func (c *Client) Close() {
+	c.conn.Close()
+}
+
+func (c *Client) getMessage() (*Message, error) {
+	msg := &Message{}
+	err := c.conn.ReadJSON(msg)
+	if err != nil {
+		return msg, errors.Errorf("Client getMessage error: %s", err.Error)
+	}
+	return msg, nil
+}
+
+func (c *Client) postMessage(m *Message) error {
+	m.Id = atomic.AddUint64(&c.counter, 1)
+	err := c.conn.WriteJSON(m)
+	if err != nil {
+		return errors.Errorf("Client postMessage error: %s", err.Error)
+	}
+	return nil
 }
