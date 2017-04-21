@@ -1,6 +1,14 @@
 # golossary
 A chatbot for storing and retrieving words relating to a specific subject, text, or dialect, with explanations
 
+## Run the application
+
+```
+git clone git@github.com:willis7/golossary.git
+cd golossary
+docker-compose build
+docker-compose up -d
+```
 
 ## Architecture
 TODO
@@ -33,7 +41,7 @@ TODO
 
 ## Credits
 
-Golossary uses a number of open source projects to work properly:
+Golossary uses a number of open source projects to work:
 
 * [Gorilla] - Provides an implementation for the WebSocket protocol defined in RFC 6455.
 * [Viper] - Complete configuration solution for go applications including 12 factor apps.

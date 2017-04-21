@@ -1,5 +1,5 @@
-hash: 3243f4f0c3e0b3bed4df3f2a67c8e2e147600bfe3dfca70a8cf8f7900233f4cd
-updated: 2017-03-25T20:03:15.795699377Z
+hash: 32eebc0a3c0ea097bc495cf6a5f5e8e63940b25a4e3a19db8ea2d8a1ba42f86f
+updated: 2017-04-19T20:21:26.778998791+01:00
 imports:
 - name: github.com/fsnotify/fsnotify
   version: 629574ca2a5df945712d3079857300b5e4da0236
@@ -16,6 +16,8 @@ imports:
   - json/parser
   - json/scanner
   - json/token
+- name: github.com/lib/pq
+  version: 2704adc878c21e1329f46f6e56a1c387d788ff94
 - name: github.com/magiconair/properties
   version: f917359f079a3759162704eaa8caeec3d01d9f91
 - name: github.com/mitchellh/mapstructure
@@ -24,6 +26,8 @@ imports:
   version: c37440a7cf42ac63b919c752ca73a85067e05992
 - name: github.com/pelletier/go-toml
   version: f6e7596e8daafd44dc9e5c208dc73035020c8481
+- name: github.com/pkg/errors
+  version: ff09b135c25aae272398c51a07235b90a75aa4f0
 - name: github.com/spf13/afero
   version: 9be650865eab0c12963d8753212f4f9c66cdcf12
   subpackages:

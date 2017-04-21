@@ -1,11 +1,13 @@
 package slack
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"sync/atomic"
 
 	"github.com/gorilla/websocket"
@@ -65,22 +67,25 @@ type Message struct {
 }
 
 type Client struct {
+	id      string
 	conn    *websocket.Conn
 	apiUrl  string
 	token   string
 	counter uint64
+	db      *sql.DB
 }
 
 // NewClient
-func NewClient(token string) *Client {
+func NewClient(token string, db *sql.DB) *Client {
 	return &Client{
 		apiUrl: "https://slack.com/api",
 		token:  token,
+		db:     db,
 	}
 }
 
 // start does a rtm.start, and returns a websocket URL and user ID.
-func (c *Client) start() (wsurl string, id string, err error) {
+func (c *Client) start() (wsurl string, err error) {
 	url := fmt.Sprintf("%s/rtm.start?token=%s", c.apiUrl, c.token)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -107,13 +112,13 @@ func (c *Client) start() (wsurl string, id string, err error) {
 	}
 
 	wsurl = respObj.URL
-	id = respObj.Self.ID
+	c.id = respObj.Self.ID
 	return
 }
 
 // Connect opens a websocket connection with Slack.
 func (c *Client) Connect() error {
-	wsurl, _, err := c.start()
+	wsurl, err := c.start()
 	if err != nil {
 		log.Fatal(err)
 		return errors.Errorf("Client Connect error: %s", err.Error)
@@ -140,9 +145,8 @@ func (c *Client) Dispatch() {
 		}
 		switch msg.Type {
 		case RTMMessage:
-			log.Printf("text: %s", msg.Text)
-			if msg.Text == "hello" {
-				c.postMessage(&Message{Type: msg.Type, Channel: msg.Channel, Text: fmt.Sprintf("Hello to you, %s", msg.User)})
+			if strings.HasPrefix(msg.Text, "<@"+c.id+">") {
+				go handleRTMMessage(msg, c)
 			}
 			break
 		default:
@@ -151,8 +155,21 @@ func (c *Client) Dispatch() {
 	}
 }
 
-// Shutdown cleanly closes a connection. A client should send a close
-// frame and wait for the server to close the connection.
+func handleRTMMessage(msg *Message, c *Client) {
+	parts := strings.Fields(msg.Text)
+	if len(parts) == 3 && parts[1] == "define" {
+		// TODO: concurrently call to the DB and postMessage
+		c.postMessage(&Message{Type: msg.Type, Channel: msg.Channel, Text: fmt.Sprintf("%s means - ", parts[2])})
+		// NOTE: the Message object is copied, this is intentional
+	} else {
+		// huh?
+		msg.Text = fmt.Sprintf("sorry, that does not compute\n")
+		c.postMessage(msg)
+	}
+}
+
+// Shutdown cleanly closes a connection. Shutdown sends a close
+// frame and waits for the server to close the connection.
 func (c *Client) Shutdown() error {
 	err := c.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 	if err != nil {
@@ -161,8 +178,10 @@ func (c *Client) Shutdown() error {
 	return nil
 }
 
+// Close
 func (c *Client) Close() {
 	c.conn.Close()
+	c.db.Close()
 }
 
 func (c *Client) getMessage() (*Message, error) {

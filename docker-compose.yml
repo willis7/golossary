@@ -1,0 +1,28 @@
+version: '2'
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=golossary
+      - POSTGRES_PASSWORD=secret123
+
+#  go:
+#    build: .
+#    links:
+#      - postgres:db
+#    ports:
+#      - "8080:8080"
+
+#  proxy:
+#    image: nginx:latest
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#    links:
+#      - go:app
