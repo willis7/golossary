@@ -1,4 +1,7 @@
 # golossary
+[![Build Status](https://travis-ci.org/willis7/golossary.svg?branch=master)](https://travis-ci.org/willis7/golossary)
+[![Coverage Status](https://coveralls.io/repos/github/willis7/golossary/badge.svg?branch=master)](https://coveralls.io/github/willis7/golossary?branch=master)
+
 A chatbot for storing and retrieving words relating to a specific subject, text, or dialect, with explanations
 
 ## Run the application

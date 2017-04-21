@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -22,10 +21,9 @@ func init() {
 }
 
 func main() {
-	db := InitDb()
 
 	token := viper.GetString("slack.token")
-	client := slack.NewClient(token, db)
+	client := slack.NewClient(token)
 	client.Connect()
 	defer client.Close()
 	go client.Dispatch()
@@ -50,36 +48,3 @@ func main() {
 	}
 }
 
-// InitDb
-func InitDb() *sql.DB {
-	dbInfo := fmt.Sprintf(
-		"user=%s dbname=%s password=%s host=%s port=%s sslmode=disable",
-		viper.GetString("database.username"),
-		viper.GetString("database.name"),
-		viper.GetString("database.password"),
-		viper.GetString("database.hostname"),
-		viper.GetString("database.port"),
-	)
-	db, err := sql.Open("postgres", dbInfo)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
-	_, err = db.Exec(
-		`CREATE TABLE if NOT EXISTS "words" (
-			    "id" serial,
-			    "word" varchar(56) NOT NULL UNIQUE,
-			    "definition" varchar(500) NOT NULL,
-			    CONSTRAINT words_pk PRIMARY KEY ("id")
-		    )`)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	return db
-}

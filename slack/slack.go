@@ -1,7 +1,6 @@
 package slack
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -72,15 +71,13 @@ type Client struct {
 	apiUrl  string
 	token   string
 	counter uint64
-	db      *sql.DB
 }
 
 // NewClient
-func NewClient(token string, db *sql.DB) *Client {
+func NewClient(token string) *Client {
 	return &Client{
 		apiUrl: "https://slack.com/api",
 		token:  token,
-		db:     db,
 	}
 }
 
@@ -181,7 +178,6 @@ func (c *Client) Shutdown() error {
 // Close
 func (c *Client) Close() {
 	c.conn.Close()
-	c.db.Close()
 }
 
 func (c *Client) getMessage() (*Message, error) {

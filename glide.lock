@@ -1,5 +1,5 @@
-hash: 32eebc0a3c0ea097bc495cf6a5f5e8e63940b25a4e3a19db8ea2d8a1ba42f86f
-updated: 2017-04-19T20:21:26.778998791+01:00
+hash: f8c6b8f9170e4965c8bafad574010a9cb84c883b2cebac05b8b84c5a75e13a49
+updated: 2017-04-21T21:08:06.796324+01:00
 imports:
 - name: github.com/fsnotify/fsnotify
   version: 629574ca2a5df945712d3079857300b5e4da0236
@@ -18,6 +18,8 @@ imports:
   - json/token
 - name: github.com/lib/pq
   version: 2704adc878c21e1329f46f6e56a1c387d788ff94
+  subpackages:
+  - oid
 - name: github.com/magiconair/properties
   version: f917359f079a3759162704eaa8caeec3d01d9f91
 - name: github.com/mitchellh/mapstructure
@@ -49,6 +51,8 @@ imports:
   subpackages:
   - transform
   - unicode/norm
+- name: gopkg.in/mgo.v2
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
 - name: gopkg.in/yaml.v2
   version: a3f3340b5840cee44f372bddb5880fcbc419b46a
 testImports: []
