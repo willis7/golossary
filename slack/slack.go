@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"sync/atomic"
 
 	"github.com/gorilla/websocket"
@@ -71,13 +70,15 @@ type Client struct {
 	apiUrl  string
 	token   string
 	counter uint64
+	mux     *EventMux
 }
 
 // NewClient
-func NewClient(token string) *Client {
+func NewClient(token string, mux *EventMux) *Client {
 	return &Client{
 		apiUrl: "https://slack.com/api",
 		token:  token,
+		mux:    mux,
 	}
 }
 
@@ -130,7 +131,7 @@ func (c *Client) Connect() error {
 	return nil
 }
 
-// Dispatch reads the events from Slack and sends them to the correct Performer
+// Dispatch reads the events from Slack and sends them to the correct Handler
 func (c *Client) Dispatch() {
 	defer c.conn.Close()
 
@@ -140,28 +141,12 @@ func (c *Client) Dispatch() {
 			log.Println("read:", err)
 			return
 		}
-		switch msg.Type {
-		case RTMMessage:
-			if strings.HasPrefix(msg.Text, "<@"+c.id+">") {
-				go handleRTMMessage(msg, c)
-			}
-			break
-		default:
+
+		if v, ok := c.mux.m[msg.Type]; ok {
+			v.h.ServeEvent(msg, c)
+		} else {
 			log.Printf("recv: %+v", msg)
 		}
-	}
-}
-
-func handleRTMMessage(msg *Message, c *Client) {
-	parts := strings.Fields(msg.Text)
-	if len(parts) == 3 && parts[1] == "define" {
-		// TODO: concurrently call to the DB and postMessage
-		c.postMessage(&Message{Type: msg.Type, Channel: msg.Channel, Text: fmt.Sprintf("%s means - ", parts[2])})
-		// NOTE: the Message object is copied, this is intentional
-	} else {
-		// huh?
-		msg.Text = fmt.Sprintf("sorry, that does not compute\n")
-		c.postMessage(msg)
 	}
 }
 
@@ -175,7 +160,7 @@ func (c *Client) Shutdown() error {
 	return nil
 }
 
-// Close
+// Close a client connection
 func (c *Client) Close() {
 	c.conn.Close()
 }
@@ -189,11 +174,11 @@ func (c *Client) getMessage() (*Message, error) {
 	return msg, nil
 }
 
-func (c *Client) postMessage(m *Message) error {
+func (c *Client) PostMessage(m *Message) error {
 	m.Id = atomic.AddUint64(&c.counter, 1)
 	err := c.conn.WriteJSON(m)
 	if err != nil {
-		return errors.Errorf("Client postMessage error: %s", err.Error)
+		return errors.Errorf("Client PostMessage error: %s", err.Error)
 	}
 	return nil
 }

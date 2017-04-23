@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -22,8 +23,11 @@ func init() {
 
 func main() {
 
+	mux := slack.NewEventMux()
+	mux.Handle("message", slack.HandlerFunc(RTMMessage))
+
 	token := viper.GetString("slack.token")
-	client := slack.NewClient(token)
+	client := slack.NewClient(token, mux)
 	client.Connect()
 	defer client.Close()
 	go client.Dispatch()
@@ -48,3 +52,15 @@ func main() {
 	}
 }
 
+func RTMMessage(msg *slack.Message, c *slack.Client) {
+	parts := strings.Fields(msg.Text)
+	if len(parts) == 3 && parts[1] == "define" {
+		// TODO: concurrently call to the DB and postMessage
+		c.PostMessage(&slack.Message{Type: msg.Type, Channel: msg.Channel, Text: fmt.Sprintf("%s means - ", parts[2])})
+		// NOTE: the Message object is copied, this is intentional
+	} else {
+		// huh?
+		msg.Text = fmt.Sprintf("sorry, that does not compute\n")
+		c.PostMessage(msg)
+	}
+}

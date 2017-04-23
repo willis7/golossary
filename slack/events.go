@@ -1,18 +1,26 @@
-package handlers
+package slack
 
 import "sync"
 
-// DefaultEventMux is the default EventMux used by Serve.
-var DefaultEventMux = &defaultEventMux
 
-var defaultEventMux EventMux
+type Handler interface{
+	ServeEvent(*Message, *Client)
+}
 
-type Handler interface{}
+// The HandlerFunc type is an adapter to allow the use of
+// ordinary functions as Event handlers. If f is a function
+// with the appropriate signature, HandlerFunc(f) is a
+// Handler that calls f.
+type HandlerFunc func(*Message, *Client)
+
+// ServeEvent calls f(msg, slack).
+func (f HandlerFunc) ServeEvent(msg *Message, slack *Client) {
+	f(msg, slack)
+}
 
 // EventMux is an Event multiplexer.
 // It matches the event type of each incoming event against a list of registered
-// events and calls the handler for the event that
-// most closely matches the event.
+// events and calls the handler for the event
 type EventMux struct {
 	mu sync.RWMutex
 	m  map[string]muxEntry
@@ -24,8 +32,8 @@ type muxEntry struct {
 	event    string
 }
 
-// NewEventsMux allocates and returns a new EventsMux.
-func NewEventsMux() *EventMux { return new(EventMux) }
+// NewEventMux allocates and returns a new EventsMux.
+func NewEventMux() *EventMux { return new(EventMux) }
 
 // Handle registers the handler for the given pattern.
 // If a handler already exists for pattern, Handle panics.
