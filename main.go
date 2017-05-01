@@ -10,7 +10,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
-	"github.com/willis7/golossary/slack"
+	"github.com/willis7/slack"
 )
 
 func init() {

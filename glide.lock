@@ -1,5 +1,5 @@
-hash: f8c6b8f9170e4965c8bafad574010a9cb84c883b2cebac05b8b84c5a75e13a49
-updated: 2017-04-21T21:08:06.796324+01:00
+hash: 29317f491d611bab3403b6a7cef43f5124109a485e98dfdf1be51b19f4f73d66
+updated: 2017-05-01T19:03:07.019485265+01:00
 imports:
 - name: github.com/fsnotify/fsnotify
   version: 629574ca2a5df945712d3079857300b5e4da0236
@@ -29,7 +29,7 @@ imports:
 - name: github.com/pelletier/go-toml
   version: f6e7596e8daafd44dc9e5c208dc73035020c8481
 - name: github.com/pkg/errors
-  version: ff09b135c25aae272398c51a07235b90a75aa4f0
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/spf13/afero
   version: 9be650865eab0c12963d8753212f4f9c66cdcf12
   subpackages:
@@ -42,6 +42,8 @@ imports:
   version: d90f37a48761fe767528f31db1955e4f795d652f
 - name: github.com/spf13/viper
   version: 5ed0fc31f7f453625df314d8e66b9791e8d13003
+- name: github.com/willis7/slack
+  version: 8244234ceca7a77d82f586281fdd8c163f027e42
 - name: golang.org/x/sys
   version: afadfcc7779c1f4db0f6f6438afcb108d9c9c7cd
   subpackages:
