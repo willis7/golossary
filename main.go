@@ -17,7 +17,7 @@ func init() {
 	viper.SetConfigName("app_config")
 	viper.AddConfigPath(".")
 	if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+		panic(fmt.Errorf("fatal error config file: %s", err))
 	}
 }
 
@@ -52,6 +52,7 @@ func main() {
 	}
 }
 
+// RTMMessage is a HandlerFunc implementation which handles the "message" event
 func RTMMessage(msg *slack.Message, c *slack.Client) {
 	parts := strings.Fields(msg.Text)
 	if len(parts) == 3 && parts[1] == "define" {
