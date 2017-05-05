@@ -1,6 +1,8 @@
-hash: 29317f491d611bab3403b6a7cef43f5124109a485e98dfdf1be51b19f4f73d66
-updated: 2017-05-01T19:03:07.019485265+01:00
+hash: 60bc91735ae712c489baf95ebdbb72dff513e3dc5bd3de3117dd521b17604f4f
+updated: 2017-05-05T19:29:09.063165395+01:00
 imports:
+- name: github.com/boltdb/bolt
+  version: 583e8937c61f1af6513608ccc75c97b6abdf4ff9
 - name: github.com/fsnotify/fsnotify
   version: 629574ca2a5df945712d3079857300b5e4da0236
 - name: github.com/gorilla/websocket

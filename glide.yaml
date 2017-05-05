@@ -5,3 +5,5 @@ import:
 - package: github.com/spf13/viper
 - package: gopkg.in/mgo.v2
 - package: github.com/willis7/slack
+- package: github.com/boltdb/bolt
+  version: ~1.3.0

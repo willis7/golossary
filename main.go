@@ -10,6 +10,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/spf13/viper"
+	"github.com/willis7/golossary/models"
 	"github.com/willis7/slack"
 )
 
@@ -22,6 +23,8 @@ func init() {
 }
 
 func main() {
+
+	models.InitDB(viper.GetString("database.path"))
 
 	mux := slack.NewEventMux()
 	mux.Handle("message", slack.HandlerFunc(RTMMessage))
@@ -55,12 +58,16 @@ func main() {
 // RTMMessage is a HandlerFunc implementation which handles the "message" event
 func RTMMessage(msg *slack.Message, c *slack.Client) {
 	parts := strings.Fields(msg.Text)
-	if len(parts) == 3 && parts[1] == "define" {
-		// TODO: concurrently call to the DB and postMessage
-		c.PostMessage(&slack.Message{Type: msg.Type, Channel: msg.Channel, Text: fmt.Sprintf("%s means - ", parts[2])})
-		// NOTE: the Message object is copied, this is intentional
-	} else {
-		// huh?
+
+	switch parts[1] {
+	case "define":
+		result := models.Get(parts[2])
+		c.PostMessage(&slack.Message{Type: msg.Type, Channel: msg.Channel, Text: fmt.Sprintf("%s means - %s", parts[2], result)})
+	case "insert":
+		word := models.Word{ Name: parts[2], Description: strings.Join(parts[3:], " ")}
+		models.Update(word)
+		c.PostMessage(&slack.Message{Type: msg.Type, Channel: msg.Channel, Text: fmt.Sprintf("%s added ", parts[2])})
+	default:
 		msg.Text = fmt.Sprintf("sorry, that does not compute\n")
 		c.PostMessage(msg)
 	}
