@@ -8,19 +8,22 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-var db *bolt.DB
-
 const bucketName = "glossary"
 
-func InitDB(path string) {
+func InitDB(path string) (*bolt.DB, error){
 	var err error
 	// Open the path data file in your current directory.
 	// It will be created if it doesn't exist.
-	db, err = bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Panic(err)
+		return nil, err
 	}
+	addBucket(db)
+	return db, nil
+}
 
+func addBucket(db *bolt.DB) {
 	db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucket([]byte(bucketName))
 		if err != nil {
@@ -30,7 +33,7 @@ func InitDB(path string) {
 	})
 }
 
-func Update(word Word) {
+func Update(db *bolt.DB, word Word) {
 	db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketName))
 		err := b.Put([]byte(word.Name), []byte(word.Description))
@@ -38,7 +41,7 @@ func Update(word Word) {
 	})
 }
 
-func Get(word string) string {
+func Get(db *bolt.DB, word string) string {
 	var v []byte
 	db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketName))
