@@ -1,4 +1,4 @@
-NAME = fifty-cal
+NAME = golossary
 PWD := $(MKPATH:%/Makefile=%)
 
 help:
@@ -51,10 +51,12 @@ install:
 	glide install
 
 docker-build:
-	docker build --no-cache --rm -t $(NAME) .
+	GOOS=linux go build -o app
+	docker build -t willis7/$(NAME) .
+	rm -f app
 
 docker-run:
-	docker run -it --rm --name $(NAME) -p 8080:8080 $(NAME)
+	docker run -it --rm --name $(NAME) willis7/$(NAME)
 
 docker-rm:
 	docker rm $(NAME)

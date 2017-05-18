@@ -9,8 +9,8 @@ A chatbot for storing and retrieving words relating to a specific subject, text,
 ```
 git clone git@github.com:willis7/golossary.git
 cd golossary
-docker-compose build
-docker-compose up -d
+make docker-build
+make docker-run
 ```
 
 ## Architecture
